@@ -1,0 +1,50 @@
+-- Study records for spaced repetition
+CREATE TABLE StudyRecord (
+    id TEXT PRIMARY KEY NOT NULL,
+    flashcardId TEXT NOT NULL,
+    nextReview INTEGER NOT NULL,
+    interval INTEGER NOT NULL DEFAULT 0,
+    repetitions INTEGER NOT NULL DEFAULT 0,
+    easeFactor REAL NOT NULL DEFAULT 2.5,
+    lastDifficulty TEXT,
+    lastStudiedAt INTEGER,
+    FOREIGN KEY (flashcardId) REFERENCES Flashcard(id) ON DELETE CASCADE
+);
+
+CREATE INDEX study_next_review_idx ON StudyRecord(nextReview);
+CREATE INDEX study_flashcard_idx ON StudyRecord(flashcardId);
+
+-- Queries
+selectAll:
+SELECT * FROM StudyRecord;
+
+selectById:
+SELECT * FROM StudyRecord WHERE id = ?;
+
+selectByFlashcardId:
+SELECT * FROM StudyRecord WHERE flashcardId = ?;
+
+selectDueCards:
+SELECT * FROM StudyRecord WHERE nextReview <= ? ORDER BY nextReview ASC;
+
+insertRecord:
+INSERT INTO StudyRecord(id, flashcardId, nextReview, interval, repetitions, easeFactor, lastDifficulty, lastStudiedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateRecord:
+UPDATE StudyRecord 
+SET nextReview = ?, interval = ?, repetitions = ?, easeFactor = ?, lastDifficulty = ?, lastStudiedAt = ?
+WHERE id = ?;
+
+deleteRecord:
+DELETE FROM StudyRecord WHERE id = ?;
+
+countDueCards:
+SELECT COUNT(*) FROM StudyRecord WHERE nextReview <= ?;
+
+getStudyStats:
+SELECT
+    COUNT(*),
+    SUM(CASE WHEN lastStudiedAt >= ? THEN 1 ELSE 0 END),
+    AVG(easeFactor)
+FROM StudyRecord;

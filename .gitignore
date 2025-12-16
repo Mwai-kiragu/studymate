@@ -1,0 +1,59 @@
+# Gradle files
+.gradle/
+build/
+**/build/
+!gradle-wrapper.jar
+
+# Local configuration file (SDK path, API keys, etc)
+local.properties
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Android
+*.apk
+*.aab
+*.dex
+*.class
+
+# iOS
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Kotlin
+*.kotlin_module
+kotlin-classes/
+
+# Compose
+.compose/
+
+# Secrets
+**/*.properties
+!gradle.properties
+!gradle-wrapper.properties
+
+# Logs
+*.log
+
+# Build outputs
+out/
+.kotlin/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# macOS
+.DS_Store
+._*

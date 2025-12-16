@@ -1,0 +1,102 @@
+-- Notes table
+CREATE TABLE Note (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    summary TEXT,
+    imageUrls TEXT,
+    isPublic INTEGER NOT NULL DEFAULT 0,
+    tags TEXT,
+    sharedAt INTEGER,
+    authorName TEXT,
+    downloadCount INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX note_subject_idx ON Note(subject);
+CREATE INDEX note_updated_idx ON Note(updatedAt DESC);
+CREATE INDEX note_public_idx ON Note(isPublic);
+CREATE INDEX note_shared_idx ON Note(sharedAt DESC);
+
+-- Queries
+selectAll:
+SELECT * FROM Note ORDER BY updatedAt DESC;
+
+selectById:
+SELECT * FROM Note WHERE id = ?;
+
+selectBySubject:
+SELECT * FROM Note WHERE subject = ? ORDER BY updatedAt DESC;
+
+searchNotes:
+SELECT * FROM Note
+WHERE title LIKE '%' || ? || '%'
+   OR content LIKE '%' || ? || '%'
+   OR subject LIKE '%' || ? || '%'
+   OR tags LIKE '%' || ? || '%'
+   OR summary LIKE '%' || ? || '%'
+ORDER BY
+    CASE
+        WHEN LOWER(title) LIKE LOWER(? || '%') THEN 1
+        WHEN LOWER(subject) LIKE LOWER(? || '%') THEN 2
+        WHEN LOWER(title) LIKE LOWER('%' || ? || '%') THEN 3
+        WHEN LOWER(subject) LIKE LOWER('%' || ? || '%') THEN 4
+        ELSE 5
+    END,
+    updatedAt DESC;
+
+insertNote:
+INSERT INTO Note(id, title, content, subject, createdAt, updatedAt, summary, imageUrls, isPublic, tags, sharedAt, authorName, downloadCount)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateNote:
+UPDATE Note
+SET title = ?, content = ?, subject = ?, updatedAt = ?, summary = ?, imageUrls = ?
+WHERE id = ?;
+
+updateNoteSharing:
+UPDATE Note
+SET isPublic = ?, tags = ?, sharedAt = ?, authorName = ?
+WHERE id = ?;
+
+deleteNote:
+DELETE FROM Note WHERE id = ?;
+
+countBySubject:
+SELECT subject, COUNT(*) FROM Note GROUP BY subject;
+
+-- Community queries
+selectPublicNotes:
+SELECT * FROM Note WHERE isPublic = 1 ORDER BY sharedAt DESC;
+
+selectPublicBySubject:
+SELECT * FROM Note WHERE isPublic = 1 AND subject = ? ORDER BY sharedAt DESC;
+
+searchPublicNotes:
+SELECT * FROM Note
+WHERE isPublic = 1 AND (
+    title LIKE '%' || ? || '%'
+    OR content LIKE '%' || ? || '%'
+    OR subject LIKE '%' || ? || '%'
+    OR tags LIKE '%' || ? || '%'
+    OR summary LIKE '%' || ? || '%'
+    OR authorName LIKE '%' || ? || '%'
+)
+ORDER BY
+    CASE
+        WHEN LOWER(title) LIKE LOWER(? || '%') THEN 1
+        WHEN LOWER(subject) LIKE LOWER(? || '%') THEN 2
+        WHEN LOWER(title) LIKE LOWER('%' || ? || '%') THEN 3
+        WHEN LOWER(subject) LIKE LOWER('%' || ? || '%') THEN 4
+        ELSE 5
+    END,
+    downloadCount DESC,
+    sharedAt DESC;
+
+selectPopularNotes:
+SELECT * FROM Note WHERE isPublic = 1 ORDER BY downloadCount DESC LIMIT ?;
+
+incrementDownloadCount:
+UPDATE Note SET downloadCount = downloadCount + 1 WHERE id = ?;

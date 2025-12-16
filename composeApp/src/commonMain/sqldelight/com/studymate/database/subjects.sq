@@ -1,0 +1,45 @@
+-- Subjects table
+CREATE TABLE Subject (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL UNIQUE,
+    color TEXT NOT NULL,
+    icon TEXT,
+    createdAt INTEGER NOT NULL,
+    noteCount INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX subject_name_idx ON Subject(name);
+
+-- Queries
+selectAll:
+SELECT * FROM Subject ORDER BY name ASC;
+
+selectById:
+SELECT * FROM Subject WHERE id = ?;
+
+selectByName:
+SELECT * FROM Subject WHERE name = ?;
+
+searchSubjects:
+SELECT * FROM Subject
+WHERE LOWER(name) LIKE LOWER('%' || ? || '%')
+ORDER BY
+    CASE WHEN LOWER(name) LIKE LOWER(? || '%') THEN 1 ELSE 2 END,
+    name ASC;
+
+insertSubject:
+INSERT INTO Subject(id, name, color, icon, createdAt, noteCount)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateSubject:
+UPDATE Subject
+SET name = ?, color = ?, icon = ?
+WHERE id = ?;
+
+updateNoteCount:
+UPDATE Subject
+SET noteCount = (SELECT COUNT(*) FROM Note WHERE subject = (SELECT name FROM Subject WHERE id = ?))
+WHERE id = ?;
+
+deleteSubject:
+DELETE FROM Subject WHERE id = ?;
